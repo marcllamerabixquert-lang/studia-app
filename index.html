@@ -18,7 +18,11 @@
 </main>
 <script>
 const $=id=>document.getElementById(id);let state;try{state=JSON.parse(localStorage.getItem('studia-v1'))||{tasks:[],grades:{},goals:[],selectedDate:new Date().toLocaleDateString('en-CA')}}catch{state={tasks:[],grades:{},goals:[],selectedDate:new Date().toLocaleDateString('en-CA')}}
-function save(){try{localStorage.setItem('studia-v1',JSON.stringify(state))}catch{}}
+function save(){try{const snapshot=JSON.stringify(state);localStorage.setItem('studia-v1',snapshot);sessionStorage.setItem('studia-last-save',String(Date.now()));return true}catch(e){console.warn('No se pudieron guardar los datos de Studia',e);return false}}
+// Refuerza el guardado cuando la app pasa a segundo plano o se cierra.
+function persistOnExit(){save()}
+window.addEventListener('pagehide',persistOnExit);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistOnExit()});
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderTasks(){const html=state.tasks.map((t,i)=>'<div class="task '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="completeTask('+i+',this.checked)"><span><span class="name">'+esc(t.name)+'</span><small>'+esc(t.subject)+' · '+esc(t.type)+(t.date?' · '+esc(t.date):'')+'</small></span><button aria-label="Eliminar tarea" onclick="removeTask('+i+')">×</button></div>').join('')||'<p class="muted">Aún no hay tareas. Añade la primera.</p>';$('taskList').innerHTML=html;$('preview').innerHTML=state.tasks.filter(t=>!t.done).slice(0,4).map(t=>'<p>◦ '+esc(t.name)+' <span class="muted">· '+esc(t.subject)+(t.date?' · '+esc(t.date):'')+'</span></p>').join('')||'<p class="muted">¡Todo al día! Puedes añadir una tarea nueva.</p>';let d=state.tasks.filter(t=>t.done).length;$('done').textContent=d+'/'+state.tasks.length;$('pending').textContent=state.tasks.length-d;if($('calendarGrid'))renderCalendar();renderGoals();}
 function completeTask(i,v){state.tasks[i].done=v;save();renderTasks()}
