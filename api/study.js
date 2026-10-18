@@ -7,9 +7,8 @@ module.exports = async function handler(req, res) {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) return res.status(401).json({ error: 'Inicia sesión en Studia.' });
   const supabaseUrl = process.env.SUPABASE_URL || 'https://acyeqgluaewlgkdnkjqu.supabase.co';
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_WTjBZoO6EesY3jIS8gIfxg_wZ8f62-x';
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!supabaseKey) return res.status(503).json({ error: 'Falta configurar SUPABASE_ANON_KEY en Vercel.' });
   if (!apiKey) return res.status(503).json({ error: 'La función de IA está preparada, pero falta añadir OPENAI_API_KEY en Vercel.' });
   let auth;
   try {
